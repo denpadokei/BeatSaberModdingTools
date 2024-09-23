@@ -105,8 +105,10 @@ namespace BeatSaberModdingTools
                     prgCmds[0].cmdf = (uint)GetVsStatus(status);
                 }
             }
-
-
+            else
+            {
+                return NextTarget.QueryStatus(pguidCmdGroup, cmdId, prgCmds, pCmdText);
+            }
             return VSConstants.S_OK;
         }
 

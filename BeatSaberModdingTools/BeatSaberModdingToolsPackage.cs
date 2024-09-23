@@ -1,15 +1,12 @@
-﻿using System;
+﻿using BeatSaberModdingTools.Commands;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.VisualStudio.Shell;
-using BeatSaberModdingTools.Commands;
 using Task = System.Threading.Tasks.Task;
-using BeatSaberModdingTools.Models;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Events;
-using System.ComponentModel.Design;
-using Microsoft.VisualStudio.OLE.Interop;
 
 namespace BeatSaberModdingTools
 {
@@ -55,18 +52,18 @@ namespace BeatSaberModdingTools
         /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            
+
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             BSMTSettingsManager.SetManager(new BSMTSettingsManager());
 
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(false, cancellationToken);
-            var serviceContainer = (IServiceContainer)this; // this - is your Package/AsyncPakage
+            //var serviceContainer = (IServiceContainer)this; // this - is your Package/AsyncPakage
             var commandTargetType = typeof(IOleCommandTarget);
-            IOleCommandTarget originalTarget = (IOleCommandTarget)serviceContainer.GetService(commandTargetType);
+            IOleCommandTarget originalTarget = await this.GetServiceAsync(commandTargetType) as IOleCommandTarget;
             var commandsFilter = new CommandFilter(originalTarget, this);
-            serviceContainer.RemoveService(commandTargetType);
-            serviceContainer.AddService(commandTargetType, commandsFilter);
+            this.RemoveService(commandTargetType);
+            this.AddService(commandTargetType, (x, y, z) => Task.FromResult((object)commandsFilter));
             await BeatSaberModdingTools.EnvironmentMonitor.InitializeAsync(this);
             await BeatSaberModdingTools.Commands.AddProjectReferencePaths.InitializeAsync(this);
             await SetBeatSaberDirCommand.InitializeAsync(this);
