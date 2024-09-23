@@ -136,7 +136,7 @@ namespace BeatSaberModdingTools.Utilities
                 }
             }
 
-            return null;
+            return Array.Empty<string>();
         }
 
         public static string[] GetSteamLibraryPaths()
